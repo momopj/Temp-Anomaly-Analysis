@@ -1,23 +1,109 @@
-from pydoc import doc
 import dash
 from dash import dcc, html
 import pandas as pd
 import plotly.graph_objs as go
 
-# Load your data
-df = pd.read_csv("data.csv")  # should include Year, Anomaly, Poly_Pred, Linear_Pred, etc.
+# Loading data
+df = pd.read_csv("data.csv")  
+raw_century = pd.read_csv("century_anomalies.csv")
+rolling_year = pd.read_csv("rolling_mean_year.csv")
+rolling_5 = pd.read_csv("rolling_mean_5years.csv")
+rolling_10 = pd.read_csv("rolling_mean_10years.csv")
+
+# Convert 'Date' column to datetime format
+raw_century['Date'] = pd.to_datetime(raw_century['Date'])
+rolling_year['Date'] = pd.to_datetime(rolling_year['Date'])
+rolling_5['Date'] = pd.to_datetime(rolling_5['Date'])
+rolling_10['Date'] = pd.to_datetime(rolling_10['Date'])
+
+raw_century['Year'] = raw_century['Date'].dt.year
+rolling_year['Year'] = rolling_year['Date'].dt.year
+rolling_5['Year'] = rolling_5['Date'].dt.year
+rolling_10['Year'] = rolling_10['Date'].dt.year
+
+raw_fig = go.Scatter(x=raw_century['Date'], y=raw_century['Anomaly'], mode = 'lines', name='Global Temperature Anomalies (Raw Data)')
+rolling_year_fig = go.Scatter(x=rolling_year['Date'], y=rolling_year['Anomaly'], mode='lines', name='Global Temperature Anomalies (Rolling Mean - 1 Year)')
+rolling_5_fig = go.Scatter(x=rolling_5['Date'], y=rolling_5['Anomaly'], mode='lines', name='Global Temperature Anomalies (Rolling Mean - 5 Years)')
+rolling_10_fig = go.Scatter(x=rolling_10['Date'], y=rolling_10['Anomaly'], mode='lines', name='Global Temperature Anomalies (Rolling Mean - 10 Years)')
+
+forecast_data = pd.DataFrame({
+    'Year': [2040, 2041, 2042, 2043, 2044, 2045],
+    'Linear_prediciton': [(df[df['Year'] == 2040]['Linear_future'].values[0]),
+                            df[df['Year'] == 2041]['Linear_future'].values[0],
+                            df[df['Year'] == 2042]['Linear_future'].values[0],
+                            df[df['Year'] == 2043]['Linear_future'].values[0],
+                            df[df['Year'] == 2044]['Linear_future'].values[0],
+                            df[df['Year'] == 2045]['Linear_future'].values[0]],
+
+    'Polynomial_prediction': [df[df['Year'] == 2040]['Poly_future'].values[0],
+                            df[df['Year'] == 2041]['Poly_future'].values[0],
+                            df[df['Year'] == 2042]['Poly_future'].values[0],
+                            df[df['Year'] == 2043]['Poly_future'].values[0],
+                            df[df['Year'] == 2044]['Poly_future'].values[0],
+                            df[df['Year'] == 2045]['Poly_future'].values[0]],
+
+    'Prophet_prediction': [df[df['Year'] == 2040]['Prophet_Trend'].values[0],
+                            df[df['Year'] == 2041]['Prophet_Trend'].values[0],
+                            df[df['Year'] == 2042]['Prophet_Trend'].values[0],
+                            df[df['Year'] == 2043]['Prophet_Trend'].values[0],
+                            df[df['Year'] == 2044]['Prophet_Trend'].values[0],
+                            df[df['Year'] == 2045]['Prophet_Trend'].values[0]]
+})
+
+forecast_data['Linear_prediciton'] = forecast_data['Linear_prediciton'].round(2)
+forecast_data['Polynomial_prediction'] = forecast_data['Polynomial_prediction'].round(2)
+forecast_data['Prophet_prediction'] = forecast_data['Prophet_prediction'].round(2)
+
 
 app = dash.Dash(__name__)
 app.title = "Global Temperature Anomaly Dashboard"
 
 app.layout = html.Div([
-    html.H1("Global Temperature Anomalies", style={'textAlign': 'center', 'color': '#333', 'fontFamily': 'Arial'}),
+    html.H1("Global Temperature Anomalies", style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
     html.Div([
-        html.P("This dashboard visualizes global temperature anomalies over the years, including linear and polynomial trend lines as well as future predictions.", 
-               style={'textAlign': 'center', 'color': '#666', 'fontFamily': 'Arial'}),
+        html.P("This dashboard visualizes global temperature anomalies over the past 100 years, including Linear and Polynomial Regression lines as well as future predictions.", 
+               style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
     ], style={'marginBottom': '20px'}),
-    
 
+    html.H2("Data Visualizations and exploration", style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+    html.Div([
+        html.Div([
+            dcc.Graph(
+                id='raw-data',
+                figure=go.Figure(data=[raw_fig], layout=go.Layout(title='Global Temperature Anomalies (Raw Data)'))
+            )
+        ], style={'width': '48%', 'display': 'inline-block'}),
+
+        html.Div([
+            dcc.Graph(
+                id='rolling-year',
+                figure=go.Figure(data=[rolling_year_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 1 Year)'))
+            )
+        ], style={'width': '48%', 'display': 'inline-block'})
+    ], style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '5px'}),
+
+    html.Div([
+        html.Div([
+            dcc.Graph(
+                id='rolling-5',
+                figure=go.Figure(data=[rolling_5_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 5 Years)'))
+            )
+        ], style={'width': '48%', 'display': 'inline-block'}),
+
+        html.Div([
+            dcc.Graph(
+                id='rolling-10',
+                figure=go.Figure(data=[rolling_10_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 10 Years)'))
+            )
+        ], style={'width': '48%', 'display': 'inline-block'})
+    ], style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '5px'}),
+
+    
+    html.H2("Temperature Anomalies with Trends and Predictions", style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+    html.Div([
+        html.P("This section includes Linear and Polynomial Regression lines on the yearly data, as well as future prediction lines for global temperature anomalies up to the year 2045.", 
+               style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+    ], style={'marginBottom': '20px'}),
     dcc.Graph(
     id='anomaly-graph',
     figure={
@@ -74,13 +160,39 @@ app.layout = html.Div([
                     'xanchor': 'left',
                     'y': 1.1,
                     'yanchor': 'top'
-                }
-            ]
-        )
-    }
-)
+                        }
+                    ]
+                )
+            }
 
-])
+        ),
+        html.Div([
+            html.H3("Table of future predicitons from all the models used in this dashboard (2040-2045)", style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+        ]),
+            dcc.Graph(
+                id='forecast-table',
+                figure={
+                    'data': [
+                        go.Table(
+                            header=dict(values=['Year', 'Linear Prediction', 'Polynomial Prediction', 'Prophet Prediction'],
+                                        fill_color='paleturquoise',
+                                        align='left'),
+                            cells=dict(values=[forecast_data['Year'], forecast_data['Linear_prediciton'], 
+                                               forecast_data['Polynomial_prediction'], forecast_data['Prophet_prediction']],
+                                       fill_color='lavender',
+                                       align='left'))
+                    ],
+                    'layout': go.Layout(title=dict(text='Future Predictions (2040-2045)'))
+                }
+            )
+            
+
+], style={
+    'backgroundColor': "#2a2f31",
+    'minHeight': '100vh',          
+    'padding': '20px',             
+    'fontFamily': 'Arial'          
+})
 
 if __name__ == '__main__':
     app.run(debug=True)
