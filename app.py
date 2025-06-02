@@ -1,3 +1,4 @@
+from turtle import bgcolor
 import dash
 from dash import dcc, html
 import pandas as pd
@@ -70,14 +71,30 @@ app.layout = html.Div([
         html.Div([
             dcc.Graph(
                 id='raw-data',
-                figure=go.Figure(data=[raw_fig], layout=go.Layout(title='Global Temperature Anomalies (Raw Data)'))
+                figure=go.Figure(data=[raw_fig], layout=go.Layout(title='Global Temperature Anomalies (Raw Data)', 
+                                                                         font = dict(family='Arial', size=14, color='#fff'), 
+                                                                         plot_bgcolor="#FCFEFF", paper_bgcolor="#2a2f31", 
+                                                                         
+                                                                         xaxis=dict(title='Year', showgrid=True, gridcolor='LightGray', 
+                                                                                    gridwidth=1, zeroline=False),
+                                                                         yaxis=dict(title='Anomaly (°C)', showgrid=True, gridcolor='LightGray',
+                                                                                     gridwidth=1, zeroline=False)
+                                                                    )   
+                                                                    
+                                                                ),
             )
         ], style={'width': '48%', 'display': 'inline-block'}),
 
         html.Div([
             dcc.Graph(
                 id='rolling-year',
-                figure=go.Figure(data=[rolling_year_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 1 Year)'))
+                figure=go.Figure(data=[rolling_year_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 1 Year)', 
+                                                                         font = dict(family='Arial', size=14, color='#fff'), 
+                                                                         plot_bgcolor="#FCFEFF", paper_bgcolor="#2a2f31",
+                                                                         xaxis=dict(title='Year', showgrid=True, gridcolor='LightGray', 
+                                                                                    gridwidth=1, zeroline=False),
+                                                                         yaxis=dict(title='Anomaly (°C)', showgrid=True, gridcolor='LightGray',
+                                                                                     gridwidth=1, zeroline=False))),
             )
         ], style={'width': '48%', 'display': 'inline-block'})
     ], style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '5px'}),
@@ -86,14 +103,27 @@ app.layout = html.Div([
         html.Div([
             dcc.Graph(
                 id='rolling-5',
-                figure=go.Figure(data=[rolling_5_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 5 Years)'))
+                figure=go.Figure(data=[rolling_5_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 5 Years)', 
+                                                                         font = dict(family='Arial', size=14, color='#fff'), 
+                                                                         plot_bgcolor="#FCFEFF", paper_bgcolor="#2a2f31",
+                                                                         xaxis=dict(title='Year', showgrid=True, gridcolor='LightGray', 
+                                                                                    gridwidth=1, zeroline=False),
+                                                                         yaxis=dict(title='Anomaly (°C)', showgrid=True, gridcolor='LightGray',
+                                                                                     gridwidth=1, zeroline=False))),
             )
         ], style={'width': '48%', 'display': 'inline-block'}),
 
         html.Div([
             dcc.Graph(
                 id='rolling-10',
-                figure=go.Figure(data=[rolling_10_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 10 Years)'))
+                figure=go.Figure(data=[rolling_10_fig], layout=go.Layout(title='Global Temperature Anomalies (Rolling Mean - 10 Years)', 
+                                                                         font = dict(family='Arial', size=14, color='#fff'), 
+                                                                         plot_bgcolor="#FCFEFF", paper_bgcolor="#2a2f31", 
+                                                                         
+                                                                         xaxis=dict(title='Year', showgrid=True, gridcolor='LightGray', 
+                                                                                    gridwidth=1, zeroline=False),
+                                                                         yaxis=dict(title='Anomaly (°C)', showgrid=True, gridcolor='LightGray',
+                                                                                     gridwidth=1, zeroline=False))),
             )
         ], style={'width': '48%', 'display': 'inline-block'})
     ], style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '5px'}),
@@ -102,6 +132,8 @@ app.layout = html.Div([
     html.H2("Temperature Anomalies with Trends and Predictions", style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
     html.Div([
         html.P("This section includes Linear and Polynomial Regression lines on the yearly data, as well as future prediction lines for global temperature anomalies up to the year 2045.", 
+               style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+        html.P("The data used for the models was the mean yearly data from the last 100 years.",
                style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
     ], style={'marginBottom': '20px'}),
     dcc.Graph(
@@ -117,6 +149,9 @@ app.layout = html.Div([
         ],
         'layout': go.Layout(
             title=dict(text = 'Temperature Anomalies with Trends and Predictions (to 2045)'),
+            font=dict(family='Arial', size=14, color='#fff'),
+            paper_bgcolor="#2a2f31",
+            plot_bgcolor="#FCFEFF",
             xaxis={'title': 'Year'},
             yaxis={'title': 'Anomaly (°C)'},
             hovermode='closest',
@@ -182,7 +217,9 @@ app.layout = html.Div([
                                        fill_color='lavender',
                                        align='left'))
                     ],
-                    'layout': go.Layout(title=dict(text='Future Predictions (2040-2045)'))
+                    'layout': go.Layout(title=dict(text='Future Predictions (2040-2045)', font = dict(family='Arial', size=16, color='#fff')),
+                                       font=dict(family='Arial', size=14, color='#000'),
+                                       paper_bgcolor="#2a2f31", plot_bgcolor="#FCFEFF")
                 }
             )
             
