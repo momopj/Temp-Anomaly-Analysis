@@ -1,15 +1,15 @@
-from turtle import bgcolor
+from turtle import ht
 import dash
 from dash import dcc, html
 import pandas as pd
 import plotly.graph_objs as go
 
 # Loading data
-df = pd.read_csv("data.csv")  
-raw_century = pd.read_csv("century_anomalies.csv")
-rolling_year = pd.read_csv("rolling_mean_year.csv")
-rolling_5 = pd.read_csv("rolling_mean_5years.csv")
-rolling_10 = pd.read_csv("rolling_mean_10years.csv")
+df = pd.read_csv("data/data.csv")  
+raw_century = pd.read_csv("data/century_anomalies.csv")
+rolling_year = pd.read_csv("data/rolling_mean_year.csv")
+rolling_5 = pd.read_csv("data/rolling_mean_5years.csv")
+rolling_10 = pd.read_csv("data/rolling_mean_10years.csv")
 
 # Convert 'Date' column to datetime format
 raw_century['Date'] = pd.to_datetime(raw_century['Date'])
@@ -29,31 +29,19 @@ rolling_10_fig = go.Scatter(x=rolling_10['Date'], y=rolling_10['Anomaly'], mode=
 
 forecast_data = pd.DataFrame({
     'Year': [2040, 2041, 2042, 2043, 2044, 2045],
-    'Linear_prediciton': [(df[df['Year'] == 2040]['Linear_future'].values[0]),
-                            df[df['Year'] == 2041]['Linear_future'].values[0],
-                            df[df['Year'] == 2042]['Linear_future'].values[0],
-                            df[df['Year'] == 2043]['Linear_future'].values[0],
-                            df[df['Year'] == 2044]['Linear_future'].values[0],
-                            df[df['Year'] == 2045]['Linear_future'].values[0]],
-
-    'Polynomial_prediction': [df[df['Year'] == 2040]['Poly_future'].values[0],
-                            df[df['Year'] == 2041]['Poly_future'].values[0],
-                            df[df['Year'] == 2042]['Poly_future'].values[0],
-                            df[df['Year'] == 2043]['Poly_future'].values[0],
-                            df[df['Year'] == 2044]['Poly_future'].values[0],
-                            df[df['Year'] == 2045]['Poly_future'].values[0]],
-
-    'Prophet_prediction': [df[df['Year'] == 2040]['Prophet_Trend'].values[0],
-                            df[df['Year'] == 2041]['Prophet_Trend'].values[0],
-                            df[df['Year'] == 2042]['Prophet_Trend'].values[0],
-                            df[df['Year'] == 2043]['Prophet_Trend'].values[0],
-                            df[df['Year'] == 2044]['Prophet_Trend'].values[0],
-                            df[df['Year'] == 2045]['Prophet_Trend'].values[0]]
+    'Linear_prediction': [df[df['Year'] == year]['Linear_future'].values[0] for year in range(2040, 2046)],
+    'Polynomial_prediction': [df[df['Year'] == year]['Poly_future'].values[0] for year in range(2040, 2046)],
+    'Prophet_prediction': [df[df['Year'] == year]['Prophet_Trend'].values[0] for year in range(2040, 2046)]
 })
 
-forecast_data['Linear_prediciton'] = forecast_data['Linear_prediciton'].round(2)
+forecast_data['Average'] = forecast_data[['Linear_prediction', 'Polynomial_prediction', 'Prophet_prediction']].mean(axis=1)
+
+forecast_data['Linear_prediction'] = forecast_data['Linear_prediction'].round(2)
 forecast_data['Polynomial_prediction'] = forecast_data['Polynomial_prediction'].round(2)
 forecast_data['Prophet_prediction'] = forecast_data['Prophet_prediction'].round(2)
+forecast_data['Average'] = forecast_data['Average'].round(2)
+
+forecast_data.to_csv("data/forecast_data.csv", index=False)
 
 
 app = dash.Dash(__name__)
@@ -204,16 +192,17 @@ app.layout = html.Div([
         html.Div([
             html.H3("Table of future predicitons from all the models used in this dashboard (2040-2045)", style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
         ]),
+
             dcc.Graph(
                 id='forecast-table',
                 figure={
                     'data': [
                         go.Table(
-                            header=dict(values=['Year', 'Linear Prediction', 'Polynomial Prediction', 'Prophet Prediction'],
+                            header=dict(values=['Year', 'Linear Prediction', 'Polynomial Prediction', 'Prophet Prediction', 'Average'],
                                         fill_color='paleturquoise',
                                         align='left'),
-                            cells=dict(values=[forecast_data['Year'], forecast_data['Linear_prediciton'], 
-                                               forecast_data['Polynomial_prediction'], forecast_data['Prophet_prediction']],
+                            cells=dict(values=[forecast_data['Year'], forecast_data['Linear_prediction'], 
+                                               forecast_data['Polynomial_prediction'], forecast_data['Prophet_prediction'], forecast_data['Average']],
                                        fill_color='lavender',
                                        align='left'))
                     ],
@@ -221,7 +210,18 @@ app.layout = html.Div([
                                        font=dict(family='Arial', size=14, color='#000'),
                                        paper_bgcolor="#2a2f31", plot_bgcolor="#FCFEFF")
                 }
-            )
+            ),
+           html.H3("Data", style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+            html.P("The data, libraries and models used in this dashboard are the following:",
+                   style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+            html.Ul([
+                html.Li("Anomalies: NOAA National Centers for Environmental Information (NCEI)"),
+                html.Li("Rolling Means: Calculated from the raw data using Pandas"),
+                html.Li("Forecasting Models: Linear Regression, Polynomial Regression, and Prophet"),
+                html.Li("Data Visualization: Plotly and Dash")
+            ], style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
+            html.P("created by: Muhammed Panjwani",
+                   style={'textAlign': 'center', 'color': '#fff', 'fontFamily': 'Arial'}),
             
 
 ], style={

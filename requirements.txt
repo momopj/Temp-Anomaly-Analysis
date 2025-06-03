@@ -1,0 +1,8 @@
+# This file lists the required packages for the project.
+dash
+pandas
+numpy
+plotly
+scikit-learn
+prophet
+jupyter
