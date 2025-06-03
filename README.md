@@ -76,7 +76,7 @@ Copy the URL in your terminal and paste it into your browser
 
 ## Dashboard Preview
 
-![Dashboard](preview.png)
+![Dashboard](preview/preview.png)
 
 ## Future work
 I wish to do more work on this project by not only working with mean yearly data to predict future anomalies to see how the timespan affects the predictions.
