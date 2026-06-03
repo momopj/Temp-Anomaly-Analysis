@@ -5,6 +5,8 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 import statsmodels.api as sm
 from statsmodels.stats.stattools import durbin_watson
+from sklearn.model_selection import TimeSeriesSplit
+import numpy as np
 
 DATA_DIR = Path(__file__).parent / "data"
 PERIOD = ("1925-01-01", "2025-04-01")
@@ -117,6 +119,21 @@ def save_outputs(century, rolling, out_dir=DATA_DIR):
     rolling["10_year"].to_csv(out_dir / "rolling_mean_10years.csv")
 
 
+def time_series_cv(yearly, feature_cols, n_splits=5, target="Anomaly"):
+    """Expanding-window CV. Returns (mean RMSE, mean MAE, per-fold RMSE list)."""
+    tscv = TimeSeriesSplit(n_splits=n_splits)
+    X = yearly[feature_cols].to_numpy()
+    y = yearly[target].to_numpy()
+
+    fold_rmse, fold_mae = [], []
+    for train_idx, test_idx in tscv.split(X):
+        model = LinearRegression().fit(X[train_idx], y[train_idx])
+        preds = model.predict(X[test_idx])
+        fold_rmse.append(np.sqrt(mean_squared_error(y[test_idx], preds)))
+        fold_mae.append(mean_absolute_error(y[test_idx], preds))
+    return np.mean(fold_rmse), np.mean(fold_mae), fold_rmse
+
+
 df = load_data()
 century = slice_period(df)
 century_summary_stats = century.describe()
@@ -152,6 +169,22 @@ rate_2025 = warming_rate(ols2, 2025, mean_year)
 
 ols_piece = fit_piecewise(yearly_df, knot=1979)
 comparison_piece = compare_models({"Piecewise": ols_piece, "Quadratic": ols2, "Linear": ols})
+
+specs = {
+    "Linear":    ["Year_centred"],
+    "Quadratic": ["Year_centred", "Year_centred_sq"],
+    "Piecewise": ["t", "t_after"],
+}
+
+cv_table = pd.DataFrame(
+    {name: time_series_cv(yearly_df, cols)[:2] for name, cols in specs.items()},
+    index=["CV RMSE", "CV MAE"],
+).round(4)
+print(cv_table)
+
+# per-fold errors, to see where each model struggles
+for name, cols in specs.items():
+    print(name, [round(r, 3) for r in time_series_cv(yearly_df, cols)[2]])
 
 
 if __name__ == "__main__":
