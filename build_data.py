@@ -6,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 import statsmodels.api as sm
 from statsmodels.stats.stattools import durbin_watson
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -176,15 +177,18 @@ specs = {
     "Piecewise": ["t", "t_after"],
 }
 
-cv_table = pd.DataFrame(
-    {name: time_series_cv(yearly_df, cols)[:2] for name, cols in specs.items()},
-    index=["CV RMSE", "CV MAE"],
-).round(4)
-print(cv_table)
-
-# per-fold errors, to see where each model struggles
+cv_summary = {}   # mean metrics per model
+cv_folds = {}     # per-fold RMSEs per model
 for name, cols in specs.items():
-    print(name, [round(r, 3) for r in time_series_cv(yearly_df, cols)[2]])
+    mean_rmse, mean_mae, fold_rmse = time_series_cv(yearly_df, cols)
+    cv_summary[name] = [mean_rmse, mean_mae]
+    cv_folds[name] = fold_rmse
+
+cv_table = pd.DataFrame(cv_summary, index=["CV RMSE", "CV MAE"]).round(4)
+
+# per-fold RMSEs as a tidy table (rows = folds, columns = models)
+cv_folds_df = pd.DataFrame(cv_folds).round(4)
+cv_folds_df.index = [f"Fold {i + 1}" for i in range(len(cv_folds_df))]
 
 
 if __name__ == "__main__":
