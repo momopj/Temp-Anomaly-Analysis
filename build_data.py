@@ -68,15 +68,11 @@ def fit_quadratic(yearly):
     return sk_model, sm_model
 
 
-def compare_models(linear_ols, quad_ols):
-    """Comparison table of fit and diagnostic metrics for the two models."""
+def compare_models(models):
+    """models: dict of {name: fitted statsmodels result}. Returns a comparison table."""
     return pd.DataFrame(
-        {
-            "Linear": [linear_ols.rsquared, linear_ols.rsquared_adj,
-                       linear_ols.aic, linear_ols.bic, durbin_watson(linear_ols.resid)],
-            "Quadratic": [quad_ols.rsquared, quad_ols.rsquared_adj,
-                          quad_ols.aic, quad_ols.bic, durbin_watson(quad_ols.resid)],
-        },
+        {name: [m.rsquared, m.rsquared_adj, m.aic, m.bic, durbin_watson(m.resid)]
+         for name, m in models.items()},
         index=["R-squared", "Adj. R-squared", "AIC", "BIC", "Durbin-Watson"],
     )
 
@@ -98,6 +94,20 @@ def warming_rate(quad_ols, year, mean_year):
     c = year - mean_year
     return (b1 + 2 * b2 * c) * 10
 
+def fit_piecewise(yearly, knot=1979):
+    """Continuous piecewise fit with a slope change at `knot`.
+
+    Adds 'Predicted_piecewise' to `yearly`; returns the statsmodels result.
+    """
+    t = yearly["Year"] - knot
+    yearly["t"] = t                     
+    yearly["t_after"] = t.clip(lower=0)     
+
+    X = sm.add_constant(yearly[["t", "t_after"]])
+    model = sm.OLS(yearly["Anomaly"], X).fit()
+    yearly["Predicted_piecewise"] = model.predict(X)
+    return model
+
 
 def save_outputs(century, rolling, out_dir=DATA_DIR):
     """Write the century slice and rolling means to CSV."""
@@ -107,7 +117,6 @@ def save_outputs(century, rolling, out_dir=DATA_DIR):
     rolling["10_year"].to_csv(out_dir / "rolling_mean_10years.csv")
 
 
-# ---- assemble the standard objects so they import by name ----
 df = load_data()
 century = slice_period(df)
 century_summary_stats = century.describe()
@@ -132,7 +141,7 @@ linear_pred_2024 = predict_linear(model1, 2024, mean_year)
 actual_2024 = yearly_df.loc[yearly_df["Year"] == 2024, "Anomaly"].values[0]
 
 model2, ols2 = fit_quadratic(yearly_df)
-comparison = compare_models(ols, ols2)
+comparison = compare_models({"Linear": ols, "Quadratic": ols2})
 
 quad_pred_2040 = predict_quadratic(model2, 2040, mean_year)
 quad_pred_2024 = predict_quadratic(model2, 2024, mean_year)
@@ -140,6 +149,9 @@ quad_pred_2024 = predict_quadratic(model2, 2024, mean_year)
 rate_1925 = warming_rate(ols2, 1925, mean_year)
 rate_1975 = warming_rate(ols2, 1975, mean_year)
 rate_2025 = warming_rate(ols2, 2025, mean_year)
+
+ols_piece = fit_piecewise(yearly_df, knot=1979)
+comparison_piece = compare_models({"Piecewise": ols_piece, "Quadratic": ols2, "Linear": ols})
 
 
 if __name__ == "__main__":
@@ -150,3 +162,10 @@ if __name__ == "__main__":
     print(f"\nLinear 2040: {linear_pred_2040:.3f} °C  |  "
           f"2024 pred: {linear_pred_2024:.3f} °C  |  actual: {actual_2024:.3f} °C")
 
+    print(f"\nQuadratic 2040: {quad_pred_2040:.3f} °C  |  "
+          f"2024 pred: {quad_pred_2024:.3f} °C  |  actual: {actual_2024:.3f} °C")
+
+    print(f"\nWarming rates (°C per decade):")
+    print(f"1925: {rate_1925:.3f}")
+    print(f"1975: {rate_1975:.3f}")
+    print(f"2025: {rate_2025:.3f}")
