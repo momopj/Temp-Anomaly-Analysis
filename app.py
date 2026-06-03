@@ -1,4 +1,3 @@
-from turtle import ht
 import dash
 from dash import dcc, html
 import pandas as pd
