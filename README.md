@@ -12,7 +12,7 @@ The headline figure is a warming rate of about **0.11°C per decade** over 1925 
 more interesting result is what happens when the models are asked to forecast rather than
 describe: the model that fits the past most closely is not the one that predicts best.
 
-(preview/Screenshot 2026-06-04 at 14.07.58.png)
+preview/Screenshot 2026-06-04 at 14.07.58.png
 
 ---
 
