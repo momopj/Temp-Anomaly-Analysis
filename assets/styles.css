@@ -1,0 +1,135 @@
+/* ============================================================
+   Global Temperature Anomalies — editorial data-story styles
+   Type:  Newsreader (display) / Geist (UI) / Geist Mono (numbers)
+   Palette: light warm base + warming-stripes blue->red data colours
+   One accent locked across the page: --accent (#b2182b)
+   ============================================================ */
+
+:root {
+  --bg:        #faf8f5;   /* warm off-white (not pure white) */
+  --bg-panel:  #f3eee7;   /* subtle panel / chart backing */
+  --ink:       #17191c;   /* off-black text */
+  --ink-soft:  #5d5f5b;   /* muted body / captions */
+  --ink-faint: #8c8d86;   /* labels, axis */
+  --hair:      #e4ded4;   /* hairlines */
+  --accent:    #b2182b;   /* deep warming red — the only UI accent */
+  --accent-ink:#8d1422;   /* darker accent for text on light */
+
+  --measure: 65ch;
+  --col: 1060px;
+
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --sans:  "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:  "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Layout container ---- */
+.wrap { width: 100%; max-width: var(--col); margin: 0 auto; padding: 0 24px; }
+
+section { padding: clamp(56px, 9vw, 104px) 0; border-top: 1px solid var(--hair); }
+section:first-of-type { border-top: 0; }
+
+/* ---- Typography ---- */
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01em; color: var(--ink); }
+
+h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); line-height: 1.04; margin: 0 0 0.4em; font-weight: 420; }
+h2 { font-size: clamp(1.8rem, 3.6vw, 2.7rem); line-height: 1.1; margin: 0 0 0.5em; }
+h3 { font-size: 1.18rem; line-height: 1.3; margin: 0 0 0.4em; font-weight: 560; }
+
+p { margin: 0 0 1.05em; max-width: var(--measure); color: var(--ink-soft); }
+p.lead { font-size: 1.18rem; color: var(--ink); }
+strong { color: var(--ink); font-weight: 600; }
+a { color: var(--accent-ink); text-decoration: none; border-bottom: 1px solid var(--hair); }
+a:hover { border-color: var(--accent); }
+
+.kicker {
+  font-family: var(--sans);
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 1.1rem;
+}
+
+/* ---- Hero ---- */
+.hero { min-height: 92vh; display: flex; flex-direction: column; justify-content: center; border-top: 0; }
+.hero h1 { max-width: 16ch; }
+.hero .lead { max-width: 54ch; margin-bottom: 2.4rem; }
+
+.stat-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem 1.4rem; margin-bottom: 2.2rem; }
+.stat-big {
+  font-family: var(--serif); font-weight: 460;
+  font-size: clamp(3.2rem, 9vw, 6rem); line-height: 0.92;
+  color: var(--accent-ink); letter-spacing: -0.02em;
+}
+.stat-unit { font-family: var(--sans); font-size: 1rem; font-weight: 500; color: var(--ink-soft); }
+.stat-ci { font-family: var(--mono); font-size: 0.92rem; color: var(--ink-faint); }
+
+/* ---- Warming-stripes hero bar (real data viz) ---- */
+.stripes { display: flex; width: 100%; height: 92px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 0 var(--hair); }
+.stripes > span { flex: 1 1 auto; }
+.stripes-caption { font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faint); margin-top: 0.7rem; display: flex; justify-content: space-between; }
+
+/* ---- Chart panel ---- */
+.panel { background: var(--bg-panel); border: 1px solid var(--hair); border-radius: 8px; padding: 14px 10px 6px; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.chart-grid .panel.full { grid-column: 1 / -1; }
+.caption { font-size: 0.86rem; color: var(--ink-faint); margin-top: 0.4rem; }
+
+/* ---- CV comparison table (HTML, not Plotly, for typographic control) ---- */
+.cv {
+  width: 100%; border-collapse: collapse; margin: 1.4rem 0 0.6rem;
+  font-family: var(--sans); font-size: 0.98rem;
+}
+.cv thead th {
+  text-align: right; font-weight: 600; font-size: 0.72rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-faint);
+  padding: 0 0 0.7rem; border-bottom: 1px solid var(--ink);
+}
+.cv thead th:first-child { text-align: left; }
+.cv tbody td { padding: 0.78rem 0; border-bottom: 1px solid var(--hair); text-align: right; font-family: var(--mono); }
+.cv tbody td:first-child { text-align: left; font-family: var(--sans); }
+.cv tbody tr.best td { color: var(--accent-ink); font-weight: 600; }
+/* keep the numeric columns narrow so the verdict prose sits well clear of CV RMSE */
+.cv thead th:nth-child(2), .cv tbody td:nth-child(2),
+.cv thead th:nth-child(3), .cv tbody td:nth-child(3) { width: 8.5ch; white-space: nowrap; }
+.cv .verdict { color: var(--ink-soft); font-family: var(--sans); font-size: 0.9rem;
+  text-align: left; padding-left: 3rem; width: auto; }
+.cv .tag { display: inline-block; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--bg); background: var(--accent); border-radius: 999px; padding: 2px 8px; margin-left: 8px; vertical-align: 2px; }
+
+/* ---- Footer ---- */
+.colophon { color: var(--ink-faint); font-size: 0.9rem; }
+.colophon ul { list-style: none; padding: 0; margin: 0 0 1.4rem; display: grid; gap: 0.5rem; }
+.colophon li { padding-left: 1rem; border-left: 2px solid var(--hair); }
+.colophon .by { font-family: var(--mono); }
+
+/* ---- Scroll reveal (motivated: narrative unfolds as you read). Pure CSS, gated. ---- */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry 2% cover 22%; }
+    @keyframes reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  }
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 760px) {
+  body { font-size: 16px; }
+  .chart-grid { grid-template-columns: 1fr; }
+  .hero { min-height: 88vh; }
+  .cv .verdict { display: none; }      /* drop the prose column on small screens */
+}
