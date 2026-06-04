@@ -1,0 +1,2 @@
+warming_per_decade,ci_low_per_decade,ci_high_per_decade,best_model,best_cv_mae
+0.1145,0.1032,0.1259,Piecewise,0.1673

@@ -1,0 +1,4 @@
+Model,CV_RMSE,CV_MAE
+Linear,0.2661,0.2431
+Quadratic,0.3239,0.2922
+Piecewise,0.1876,0.1673
